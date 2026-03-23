@@ -1,2 +1,104 @@
-# Stock_Analyser
-Terminal-based portfolio P&amp;L calculator for NSE/BSE stocks 📈
+# ============================================================
+#   PERSONAL STOCK ANALYSER
+#   Built by: Shivam Tyagi
+#   Markets : NSE/BSE (India)
+# ============================================================
+
+# ── Portfolio Data ───────────────────────────────────────────
+stocks = ["RELIANCE", "TATAPOWER", "TATASTEEL", "HDFCBANK"]
+buy_prices    = [1307.00, 365.05, 216.33, 1440.00]
+current_prices = [1433.95, 387.65, 186.79, 1720.00]
+quantities    = [10, 15, 5, 8]
+
+# ── Helper: Border Printer ───────────────────────────────────
+def print_border(char="─", width=62):
+    print(char * width)
+
+def print_header(title):
+    print_border("═")
+    print(f"  {title}")
+    print_border("═")
+
+# ── Core Logic ───────────────────────────────────────────────
+def analyse_portfolio(stocks, buy_prices, current_prices, quantities):
+
+    results = []
+
+    for i in range(len(stocks)):
+        invested   = buy_prices[i] * quantities[i]
+        current_val = current_prices[i] * quantities[i]
+        pnl        = current_val - invested
+        return_pct = ((current_prices[i] - buy_prices[i]) / buy_prices[i]) * 100
+
+        if pnl > 0:
+            status = "WIN     🟢"
+        elif pnl < 0:
+            status = "LOSS    🔴"
+        else:
+            status = "BREAKEVEN ⚪"
+
+        results.append({
+            "stock"      : stocks[i],
+            "buy"        : buy_prices[i],
+            "current"    : current_prices[i],
+            "qty"        : quantities[i],
+            "invested"   : invested,
+            "pnl"        : pnl,
+            "return_pct" : return_pct,
+            "status"     : status
+        })
+
+    return results
+
+# ── Display: Individual Stock Table ─────────────────────────
+def display_stock_table(results):
+    print_header("STOCK-WISE BREAKDOWN")
+
+    print(f"  {'STOCK':<12} {'BUY ₹':>9} {'NOW ₹':>9} {'QTY':>5} {'P&L ₹':>12} {'RETURN':>8}  STATUS")
+    print_border("─")
+
+    for r in results:
+        print(
+            f"  {r['stock']:<12}"
+            f" {r['buy']:>9.2f}"
+            f" {r['current']:>9.2f}"
+            f" {r['qty']:>5}"
+            f" {r['pnl']:>12.2f}"
+            f" {r['return_pct']:>7.2f}%"
+            f"  {r['status']}"
+        )
+
+    print_border("─")
+
+# ── Display: Portfolio Summary ───────────────────────────────
+def display_summary(results):
+    total_invested = sum(r["invested"] for r in results)
+    total_pnl      = sum(r["pnl"]      for r in results)
+    total_return   = (total_pnl / total_invested) * 100
+    wins           = sum(1 for r in results if r["pnl"] > 0)
+    losses         = sum(1 for r in results if r["pnl"] < 0)
+
+    print_header("PORTFOLIO SUMMARY")
+    print(f"  {'Total Invested':<25} ₹{total_invested:>12.2f}")
+    print(f"  {'Total P&L':<25} ₹{total_pnl:>12.2f}")
+    print(f"  {'Overall Return':<25}  {total_return:>11.2f}%")
+    print(f"  {'Winning Trades':<25}  {wins} stock(s)")
+    print(f"  {'Losing Trades':<25}  {losses} stock(s)")
+    print_border("─")
+
+# ── Display: Best & Worst ────────────────────────────────────
+def display_best_worst(results):
+    best  = max(results, key=lambda r: r["return_pct"])
+    worst = min(results, key=lambda r: r["return_pct"])
+
+    print_header("BEST & WORST PERFORMER")
+    print(f"  🏆 Best  → {best['stock']:<12}  {best['return_pct']:>+.2f}%   ₹{best['pnl']:>10.2f}")
+    print(f"  📉 Worst → {worst['stock']:<12}  {worst['return_pct']:>+.2f}%   ₹{worst['pnl']:>10.2f}")
+    print_border("═")
+
+# ── Run ──────────────────────────────────────────────────────
+if __name__ == "__main__":
+    results = analyse_portfolio(stocks, buy_prices, current_prices, quantities)
+    display_stock_table(results)
+    display_summary(results)
+    display_best_worst(results)
